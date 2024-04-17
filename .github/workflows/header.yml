@@ -6,7 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
 
       - name: Set up cargo
         uses: actions-rs/toolchain@v1
