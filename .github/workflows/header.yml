@@ -54,3 +54,6 @@ jobs:
           git config --global user.email "team@pyro.host"
           git add .licensesnip
           git commit -am "ci: update licences"
+      
+      - name: Push changes
+        run: git push
