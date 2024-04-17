@@ -1,0 +1,56 @@
+on:
+  workflow_call
+
+jobs:
+  licence_files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up cargo
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install licensesnip
+        run: cargo install licensesnip
+
+      # check to see if .licensesnip file exists
+      - name: Check for .licensesnip
+        id: exists
+        run: |
+          echo ::set-output name=exists::$(test-f .licensesnip && echo true || echo false)
+      
+      - name: Checkout .licensesnip
+        if: steps.exists.outputs.exists == 'false'
+        id: checkout
+        run: |
+          git clone https://github.com/pyrohost/.github --depth 1 .tmp
+          cp .tmp/.licensesnip .licensesnip
+          rm -rf .tmp
+          echo ::set-output name=skip-changes::true
+
+      # check to see if .licensesnip file has changed since last commit
+      - name: Check for changes
+        if: steps.exists.outputs.skip-changes != 'true'
+        id: check
+        run: |
+          git diff --exit-code --quiet HEAD .licensesnip
+          echo ::set-output name=changed::$(test $? -ne 0)
+      
+      # if .licensesnip has changed, run licensesnip remove
+      - name: Remove headers
+        if: steps.check.outputs.changed == 'true'
+        run: licensesnip remove
+      
+      - name: Run licensesnip
+        run: licensesnip add
+      
+      - name: Commit changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "
+          git add .licensesnip
+          git commit -am "ci: update licences"
