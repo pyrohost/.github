@@ -58,10 +58,14 @@ jobs:
           git diff --exit-code --quiet HEAD .licensesnip
           echo "changed=$(test $? -ne 0)" >> $GITHUB_OUTPUT
       
-      # if .licensesnip has changed, run licensesnip remove
+      # if .licensesnip has changed, run licensesnip remove after checking out the old file, one commit behind
       - name: Remove headers
         if: steps.check.outputs.changed == 'true'
-        run: licensesnip remove
+        run: |
+          git checkout HEAD^ -- .licensesnip
+          licensesnip remove
+          git checkout HEAD -- .licensesnip
+          echo "skip-changes=true" >> $GITHUB_OUTPUT
       
       - name: Run licensesnip
         run: licensesnip
