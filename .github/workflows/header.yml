@@ -21,7 +21,7 @@ jobs:
       - name: Check for .licensesnip
         id: exists
         run: |
-          echo ::set-output name=exists::$(test-f .licensesnip && echo true || echo false)
+          echo ::set-output name=exists::$(test -f .licensesnip && echo true || echo false)
       
       - name: Checkout .licensesnip
         if: steps.exists.outputs.exists == 'false'
@@ -46,7 +46,7 @@ jobs:
         run: licensesnip remove
       
       - name: Run licensesnip
-        run: licensesnip add
+        run: licensesnip
       
       - name: Commit changes
         run: |
