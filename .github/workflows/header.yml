@@ -5,6 +5,9 @@ jobs:
   licence_files:
     runs-on: ubuntu-latest
     steps:
+      - if: ${{ github.actor == 'pyro-kitchen' }}
+        run: exit 0
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -15,9 +18,22 @@ jobs:
         with:
           toolchain: stable
           override: true
+        
+      # restore cached cargo binaries
+      - name: Cache cargo binaries
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo
 
       - name: Install licensesnip
         run: cargo install licensesnip
+
+      - name: Cache cargo binaries
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo
 
       # check to see if .licensesnip file exists
       - name: Check for .licensesnip
