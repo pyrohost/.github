@@ -21,7 +21,7 @@ jobs:
       - name: Check for .licensesnip
         id: exists
         run: |
-          echo ::set-output name=exists::$(test -f .licensesnip && echo true || echo false)
+          echo "exists=$(test -f .licensesnip && echo true || echo false)" >> $GITHUB_OUTPUT
       
       - name: Checkout .licensesnip
         if: steps.exists.outputs.exists == 'false'
@@ -30,7 +30,7 @@ jobs:
           git clone https://github.com/pyrohost/.github --depth 1 .tmp
           cp .tmp/.licensesnip .licensesnip
           rm -rf .tmp
-          echo ::set-output name=skip-changes::true
+          echo "skip-changes=true" >> $GITHUB_OUTPUT
 
       # check to see if .licensesnip file has changed since last commit
       - name: Check for changes
@@ -38,7 +38,7 @@ jobs:
         id: check
         run: |
           git diff --exit-code --quiet HEAD .licensesnip
-          echo ::set-output name=changed::$(test $? -ne 0)
+          echo "changed=$(test $? -ne 0)" >> $GITHUB_OUTPUT
       
       # if .licensesnip has changed, run licensesnip remove
       - name: Remove headers
@@ -51,6 +51,6 @@ jobs:
       - name: Commit changes
         run: |
           git config --global user.name "GitHub Actions"
-          git config --global user.email "
+          git config --global user.email "team@pyro.host"
           git add .licensesnip
           git commit -am "ci: update licences"
